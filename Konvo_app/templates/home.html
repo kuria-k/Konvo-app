@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KonvoGram</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #0f172a, #000000);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="text-white font-sans">
+
+  <!-- Header -->
+  <header class="glass py-4 px-6 flex justify-between items-center shadow-md">
+    <span class="text-2xl font-bold tracking-wide text-pink-400"> <span class="text-white text-4xl">K</span>onvo</span>
+    <div class="flex items-center space-x-4">
+      <!-- Trigger Button -->
+<button onclick="openLogoutModal()" class="text-sm bg-gradient-to-r from-red-500 to-pink-500 hover:opacity-80 text-white px-4 py-2 rounded-full shadow-md transition duration-300">
+  Log out
+</button>
+
+<!-- Modal -->
+<div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-900 text-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+    <h2 class="text-lg font-semibold mb-4">Confirm Logout</h2>
+    <p class="text-sm text-gray-300 mb-6">Are you sure you want to log out?</p>
+    <div class="flex justify-end space-x-4">
+      <button onclick="closeLogoutModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Cancel</button>
+      <form action="{% url 'logout' %}" method="get">
+        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white">Log out</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  function openLogoutModal() {
+    document.getElementById('logoutModal').classList.remove('hidden');
+  }
+
+  function closeLogoutModal() {
+    document.getElementById('logoutModal').classList.add('hidden');
+  }
+</script>
+      <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+        {{ user.username|slice:":2"|upper }}
+      </div>
+    </div>
+  </header>
+
+  <!-- Upload Form -->
+<section class="max-w-2xl mx-auto mt-10 glass p-6 rounded-xl shadow-md">
+  <form action="{% url 'upload_post' %}" method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    <textarea name="caption" placeholder="Write a caption..." class="w-full bg-gray-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea>
+    <label for="myfile" class="text-sm text-gray-300">Select a file:</label><br>
+    <input type="file" id="myfile" name="image" accept="image/*" class="text-sm text-gray-300" required>
+    <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full shadow-md">Post</button>
+  </form>
+</section>
+
+<!-- Feed Layout -->
+<main class="flex flex-col lg:flex-row justify-between max-w-6xl mx-auto mt-10 space-y-6 lg:space-y-0 lg:space-x-6">
+  <!-- Feed Section -->
+  <section class="lg:w-2/3 space-y-6">
+    {% for post in posts %}
+    <div class="glass rounded-xl shadow-lg overflow-hidden">
+      <!-- Post Header -->
+      <div class="flex items-center p-4">
+        {% if post.user.profile_pic and post.user.profile_pic.url %}
+          <img src="{{ post.user.profile_pic.url }}" class="w-10 h-10 rounded-full mr-3 border border-white" alt="profile">
+        {% else %}
+          <div class="w-10 h-10 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-xs text-white">
+            {{ post.user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+        <span class="font-semibold text-blue-300">{{ post.user.username }}</span>
+      </div>
+
+      <!-- Post Image -->
+      {% if post.image and post.image.url %}
+        <img src="{{ post.image.url }}" class="w-full object-cover max-h-[400px]" alt="post">
+      {% endif %}
+
+      <!-- Caption + Actions -->
+      <div class="p-4">
+        <p class="text-sm text-gray-200 mb-2">
+          <strong>{{ post.user.username }}</strong> {{ post.caption }}
+        </p>
+
+        <div class="flex space-x-6 text-xl items-center">
+          <!-- Like Button -->
+          <button id="likeBtn-{{ post.id }}" class="flex items-center space-x-2 text-gray-300 hover:text-red-500 transition">
+            <i id="heartIcon-{{ post.id }}" class="fa-regular fa-heart"></i>
+            <span id="likeText-{{ post.id }}">Like</span>
+          </button>
+          <span id="likeCount-{{ post.id }}" class="text-sm text-gray-400">{{ post.likes.count }} like{{ post.likes.count|pluralize }}</span>
+
+          <!-- Comments Button -->
+          <button class="hover:text-blue-400 text-sm transition">
+            View all {{ post.comments.count }} comment{{ post.comments.count|pluralize }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="px-4 pb-4 space-y-2">
+        {% for comment in post.comments.all %}
+          <p class="text-sm text-gray-300">
+            <strong>{{ comment.user.username }}</strong> {{ comment.text }}
+          </p>
+        {% endfor %}
+      </div>
+
+      <!-- Add Comment -->
+      <form action="{% url 'add_comment' post.id %}" method="post" class="px-4 pb-4">
+        {% csrf_token %}
+        <input type="text" name="text" placeholder="Add a comment..." class="w-full bg-gray-800 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-pink-500" />
+      </form>
+
+      <!-- Like Toggle Script -->
+      <script>
+  (function () {
+    const postId = "{{ post.id }}";
+    const likeBtn = document.getElementById(`likeBtn-${postId}`);
+    const heartIcon = document.getElementById(`heartIcon-${postId}`);
+    const likeText = document.getElementById(`likeText-${postId}`);
+    const likeCountSpan = document.getElementById(`likeCount-${postId}`);
+
+    if (likeBtn) {
+      likeBtn.addEventListener("click", () => {
+        fetch(`/toggle-like/${postId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.liked) {
+            heartIcon.classList.remove("fa-regular");
+            heartIcon.classList.add("fa-solid", "text-red-500");
+            likeText.textContent = "Liked";
+          } else {
+            heartIcon.classList.remove("fa-solid", "text-red-500");
+            heartIcon.classList.add("fa-regular");
+            likeText.textContent = "Like";
+          }
+
+          likeCountSpan.textContent = `${data.like_count} like${data.like_count !== 1 ? 's' : ''}`;
+        });
+      });
+    }
+  })();
+</script>
+
+
+    </div>
+    {% empty %}
+    <p class="text-center text-gray-500 mt-10">No posts available yet.</p>
+    {% endfor %}
+  </section>
+
+  <!-- Sidebar -->
+  <aside class="lg:w-1/3 space-y-6">
+    <div class="glass p-4 rounded-xl shadow-md">
+      <div class="flex items-center mb-4">
+        {% if user.profile_pic and user.profile_pic.url %}
+          <img src="{{ user.profile_pic.url }}" alt="profile" class="w-12 h-12 rounded-full mr-3 border border-white">
+        {% else %}
+          <div class="w-12 h-12 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <p class="font-semibold text-white">{{ user.username }}</p>
+          <p class="text-sm text-gray-400">{{ user.email }}</p>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-bold text-gray-300 mb-2">Suggestions for you</h3>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-white">duodrive_kenya</span>
+          <button class="text-blue-400 text-sm hover:underline">Follow</button>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-white">car_enthusiast</span>
+          <button class="text-blue-400 text-sm hover:underline">Follow</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+ 
+
+</body>
+</html>

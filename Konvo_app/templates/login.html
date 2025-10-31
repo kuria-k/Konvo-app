@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-blue-400 via-pink-400 to-black min-h-screen flex items-center justify-center">
+  <div class="bg-black bg-opacity-80 p-8 rounded-lg shadow-lg w-full max-w-sm text-white">
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-300">Welcome <span class="text-pink-400">Back</span></h1>
+
+    <form class="space-y-4" method="POST" onsubmit="showSpinner()">
+        {% if error %}
+  <div class="bg-red-600 text-white px-4 py-2 rounded mb-4 shadow-md">
+    {{ error }}
+  </div>
+{% endif %}
+
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username or Email" class="w-full px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+      <input type="password" name="password" placeholder="Password" class="w-full px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-pink-400" required />
+
+      <button id="loginBtn" type="submit" class="w-full py-2 bg-gradient-to-r from-[#00BFFF] via-[#FF69B4] to-[#FFA07A] text-black font-bold rounded hover:opacity-90 transition duration-300 shadow-md flex items-center justify-center">
+        <span id="btnText">Log In</span>
+        <svg id="spinner" class="ml-2 h-5 w-5 text-black animate-spin hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+      </button>
+
+      <p class="text-sm text-center mt-4">Don't have an account? <a href="{% url 'signup' %}" class="text-blue-300 hover:underline">Sign up</a></p>
+      
+    </form>
+
+    {% if success %}
+    <div id="toast-success" class="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 animate-fade-in">
+      {{ success }}
+    </div>
+    <script>
+      setTimeout(() => {
+        const toast = document.getElementById('toast-success');
+        if (toast) toast.style.display = 'none';
+      }, 15000);
+    </script>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  function showSpinner() {
+    document.getElementById('spinner').classList.remove('hidden');
+    document.getElementById('btnText').textContent = 'Logging in...';
+    document.getElementById('loginBtn').disabled = true;
+  }
+</script>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out;
+  }
+</style>
+{% endblock %}
+

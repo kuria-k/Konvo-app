@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-[#00BFFF] via-[#FF69B4] to-[#000000] min-h-screen flex items-center justify-center">
+  <div class="bg-black bg-opacity-80 p-8 rounded-xl shadow-2xl w-full max-w-sm text-white border border-[#00BFFF]">
+    <h1 class="text-4xl font-extrabold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#00BFFF] via-[#FF69B4] to-[#FFA07A]">
+      Create Account
+    </h1>
+    <form method="post" class="space-y-4" onsubmit="showSpinner()">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username" required
+        class="w-full px-4 py-2 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <input type="email" name="email" placeholder="Email" required
+        class="w-full px-4 py-2 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400" />
+      <input type="password" name="password1" placeholder="Password" required
+        class="w-full px-4 py-2 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <input type="password" name="password2" placeholder="Confirm Password" required
+        class="w-full px-4 py-2 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400" />
+      <button type="submit"
+        class="w-full py-2 bg-gradient-to-r from-[#00BFFF] via-[#FF69B4] to-[#FFA07A] text-black font-bold rounded hover:opacity-90 transition duration-300 shadow-md">
+        Sign Up
+      </button>
+      <p class="text-sm text-center mt-4 text-gray-300">
+        Already have an account?
+        <a href="{% url 'login' %}" class="text-[#00BFFF] hover:underline font-medium">Log in</a>
+      </p>
+    </form>
+    {% if error %}
+<div id="toast" class="fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-fade-in">
+  {{ error }}
+</div>
+<script>
+  setTimeout(() => {
+    const toast = document.getElementById('toast');
+    if (toast) toast.style.display = 'none';
+  }, 5000); 
+</script>
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translatex(-15px); }
+    to { opacity: 1; transform: translatex(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+</style>
+{% endif %}
+
+<script>
+  function showSpinner() {
+    document.getElementById('spinner').classList.remove('hidden');
+    document.getElementById('btnText').textContent = 'Logging in...';
+    document.getElementById('loginBtn').disabled = true;
+  }
+</script>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+</style>
+  </div>
+</div>
+
+{% endblock %}
